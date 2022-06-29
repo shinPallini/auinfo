@@ -71,7 +71,6 @@ func main() {
 	defer s.Close()
 
 	log.Println("Adding commands...")
-	log.Println(commandList)
 	registeredCommands := make([]*discordgo.ApplicationCommand, len(commandList))
 	for i, v := range commandList {
 		cmd, err := s.ApplicationCommandCreate(s.State.User.ID, GuildID, v)
