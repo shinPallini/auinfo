@@ -1,7 +1,6 @@
 package roles
 
 import (
-	"log"
 	"sort"
 
 	"github.com/bwmarrin/discordgo"
@@ -39,10 +38,6 @@ func NewAuInfo(camp, name, description string) AuInfo {
 	}
 }
 
-// func (a *AuInfo) displayName() string {
-// 	return fmt.Sprintf("%s: %s", a.displayName, a.camp)
-// }
-
 var (
 	// 複数選択できるMenuの選択最小値
 	min_value = 1
@@ -76,42 +71,43 @@ func init() {
 
 	sort.SliceStable(selectMenuOption, func(i, j int) bool { return selectMenuOption[i].Description < selectMenuOption[j].Description })
 
-	cmdResponse := discordgox.NewInteractionResponse(
-		discordgox.SetType(discordgo.InteractionResponseChannelMessageWithSource),
-		discordgox.SetData(discordgox.NewInteractionResponseData(
-			//discordgox.SetContent("今回使用する役職を選んでください！"),
-			discordgox.SetEmbed(
-				discordgox.NewList(
-					discordgox.NewMessageEmbed(
-						// SetAuthorでこのボットの名前を表示したい
-						discordgox.SetTitle("今回使用する役職を選んでください！"),
-						discordgox.SetColor(0x21ed43),
-					),
-				),
-			),
-			discordgox.SetComponent(
-				discordgox.NewList[discordgo.MessageComponent](
-					discordgox.NewActionsRow(
-						discordgox.SetMultiSelectMenu(
-							customId,
-							selectMenuOption,
-							&min_value,
-							len(selectMenuOption),
-						),
-					),
-				),
-			),
-		),
-		),
-	)
-
 	discordgox.AddCommandWithComponent(
 		&discordgo.ApplicationCommand{
 			Name:        "auroles",
 			Description: "Town of Hostで使える役職一覧を表示",
 		},
 		func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-			//s.State.User.String()
+			cmdResponse := discordgox.NewInteractionResponse(
+				discordgox.SetType(discordgo.InteractionResponseChannelMessageWithSource),
+				discordgox.SetData(discordgox.NewInteractionResponseData(
+					discordgox.SetEmbed(
+						discordgox.NewList(
+							discordgox.NewMessageEmbed(
+								discordgox.SetEmbedAuthor(
+									s.State.User.Username,
+									"https://github.com/shinPallini/auinfo",
+									"https://cdn.discordapp.com/embed/avatars/0.png",
+								),
+								discordgox.SetTitle("今回使用する役職を選んでください！"),
+								discordgox.SetColor(0x21ed43),
+							),
+						),
+					),
+					discordgox.SetComponent(
+						discordgox.NewList[discordgo.MessageComponent](
+							discordgox.NewActionsRow(
+								discordgox.SetMultiSelectMenu(
+									customId,
+									selectMenuOption,
+									&min_value,
+									len(selectMenuOption),
+								),
+							),
+						),
+					),
+				),
+				),
+			)
 			s.InteractionRespond(i.Interaction, cmdResponse)
 		},
 		customId,
@@ -147,7 +143,6 @@ func init() {
 			cmpResponse := discordgox.NewInteractionResponse(
 				discordgox.SetType(discordgo.InteractionResponseChannelMessageWithSource),
 				discordgox.SetData(discordgox.NewInteractionResponseData(
-					//discordgox.SetContent("今回使用する役職を選んでください！"),
 					discordgox.SetEmbed(discordgox.NewList(respEmbed)),
 				),
 				),
@@ -155,6 +150,4 @@ func init() {
 			s.InteractionRespond(i.Interaction, cmpResponse)
 		},
 	)
-	log.Println(cmdResponse.Data)
-	log.Println(discordgox.Commands)
 }
