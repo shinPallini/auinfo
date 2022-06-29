@@ -56,13 +56,13 @@ func init() {
 	third := "第3陣営"
 
 	roles := map[AuRole]AuInfo{
-		BountyHunter: NewAuInfo(imposter, "バウンティハンター", "ターゲットをキルした場合、直後のキルクールダウンが半分になる"),
-		FireWorks:    NewAuInfo(imposter, "花火職人", "花火を最大3個設置できる。\n最後のインポスターになったときシェイプシフトのタイミングで一斉に起爆させる"),
-		Mare:         NewAuInfo(imposter, "メアー", "停電の時以外ではキルができないが、キルクールは半分になる。\n停電中のみ移動速度が上昇するが名前が赤く表示される"),
-		Bait:         NewAuInfo(crew, "ベイト", "自分をキルしたプレイヤーに強制で自分の死体を通報させることができる"),
-		Dictator:     NewAuInfo(crew, "ディクテーター", "会議中に誰かが投票すると会議を強制終了させて投票先を釣ることができる。\n投票したタイミングでディクテーターは死亡する"),
+		BountyHunter: NewAuInfo(imposter, "バウンティハンター", "ターゲットをキルした場合、直後のキルクールダウンが半分になる。"),
+		FireWorks:    NewAuInfo(imposter, "花火職人", "花火を最大3個設置できる。\n最後のインポスターになったときシェイプシフトのタイミングで一斉に起爆させる。"),
+		Mare:         NewAuInfo(imposter, "メアー", "停電の時以外ではキルができないが、キルクールは半分になる。\n停電中のみ移動速度が上昇するが名前が赤く表示される。"),
+		Bait:         NewAuInfo(crew, "ベイト", "自分をキルしたプレイヤーに強制で自分の死体を通報させることができる。"),
+		Dictator:     NewAuInfo(crew, "ディクテーター", "会議中に誰かが投票すると会議を強制終了させて投票先を釣ることができる。\n投票したタイミングでディクテーターは死亡する。"),
 		Doctor:       NewAuInfo(crew, "ドクター", "プレイヤーの死因を知ることができて、遠隔でバイタルを見ることができる"),
-		Arsonist:     NewAuInfo(third, "アーソニスト", "キルボタンを押して一定時間近くにいれば相手にオイルを塗れる。\n全員にオイルを塗ってベントに入ると起爆して単独勝利となる"),
+		Arsonist:     NewAuInfo(third, "アーソニスト", "キルボタンを押して一定時間近くにいれば相手にオイルを塗れる。\n全員にオイルを塗ってベントに入ると起爆して単独勝利となる。"),
 	}
 
 	selectMenuOption := make([]discordgo.SelectMenuOption, 0)
@@ -127,7 +127,7 @@ func init() {
 					))
 					embedFields = append(embedFields, discordgox.NewMessageEmbedField(
 						discordgox.SetEmbedFieldName("\u200B"),
-						discordgox.SetEmbedFieldValue("-------------------------------------------------"),
+						discordgox.SetEmbedFieldValue("----------------------------------------------"),
 						discordgox.SetEmbedFieldInline(false),
 					))
 				}
@@ -137,6 +137,7 @@ func init() {
 				// SetAuthorしたい
 				discordgox.SetTitle("使用役職一覧"),
 				discordgox.SetEmbedField(embedFields),
+				discordgox.SetColor(0x21ed43),
 			)
 			cmpResponse := discordgox.NewInteractionResponse(
 				discordgox.SetType(discordgo.InteractionResponseChannelMessageWithSource),
