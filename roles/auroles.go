@@ -18,17 +18,17 @@ type AuInfo struct {
 	description string
 }
 
-type AuRoles string
+type AuRole string
 
 // セレクトメニューが選ばれたときに送信される値を定数で指定
 const (
-	BountyHunter AuRoles = "1"
-	FireWorks    AuRoles = "2"
-	Mare         AuRoles = "3"
-	Bait         AuRoles = "101"
-	Dictator     AuRoles = "102"
-	Doctor       AuRoles = "103"
-	Arsonist     AuRoles = "201"
+	BountyHunter AuRole = "1"
+	FireWorks    AuRole = "2"
+	Mare         AuRole = "3"
+	Bait         AuRole = "101"
+	Dictator     AuRole = "102"
+	Doctor       AuRole = "103"
+	Arsonist     AuRole = "201"
 )
 
 func NewAuInfo(camp, name, description string) AuInfo {
@@ -55,7 +55,7 @@ func init() {
 	crew := "クルー陣営"
 	third := "第3陣営"
 
-	roles := map[AuRoles]AuInfo{
+	roles := map[AuRole]AuInfo{
 		BountyHunter: NewAuInfo(imposter, "バウンティハンター", "ターゲットをキルした場合、直後のキルクールダウンが半分になる"),
 		FireWorks:    NewAuInfo(imposter, "花火職人", "花火を最大3個設置できる。\n最後のインポスターになったときシェイプシフトのタイミングで一斉に起爆させる"),
 		Mare:         NewAuInfo(imposter, "メアー", "停電の時以外ではキルができないが、キルクールは半分になる。\n停電中のみ移動速度が上昇するが名前が赤く表示される"),
@@ -105,27 +105,7 @@ func init() {
 		),
 	)
 
-	// cmpResponse := discordgox.NewInteractionResponse(
-	// 	discordgox.SetType(discordgo.InteractionResponseChannelMessageWithSource),
-	// 	discordgox.SetData(discordgox.NewInteractionResponseData(
-	// 		discordgox.SetContent("今回使用する役職を選んでください！"),
-	// 		discordgox.SetComponent(
-	// 			discordgox.NewList[discordgo.MessageComponent](
-	// 				discordgox.NewActionsRow(
-	// 					discordgox.SetMultiSelectMenu(
-	// 						"select-roles",
-	// 						selectMenuOption,
-	// 						&min_value,
-	// 						len(selectMenuOption),
-	// 					),
-	// 				),
-	// 			),
-	// 		),
-	// 	),
-	// 	),
-	// )
-
-	discordgox.AddCommand(
+	discordgox.AddCommandWithComponent(
 		&discordgo.ApplicationCommand{
 			Name:        "auroles",
 			Description: "Town of Hostで使える役職一覧を表示",
@@ -133,30 +113,42 @@ func init() {
 		func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			s.InteractionRespond(i.Interaction, cmdResponse)
 		},
+		customId,
+		func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+			data := i.MessageComponentData().Values
+			embedFields := make([]*discordgo.MessageEmbedField, 0)
+			for _, r := range data {
+				info, ok := roles[AuRole(r)]
+				if ok {
+					embedFields = append(embedFields, discordgox.NewMessageEmbedField(
+						discordgox.SetEmbedFieldName(info.name),
+						discordgox.SetEmbedFieldValue(info.description),
+						discordgox.SetEmbedFieldInline(false),
+					))
+					embedFields = append(embedFields, discordgox.NewMessageEmbedField(
+						discordgox.SetEmbedFieldName("\u200B"),
+						discordgox.SetEmbedFieldValue("-------------------------------------------------"),
+						discordgox.SetEmbedFieldInline(false),
+					))
+				}
+			}
+			embedFields = embedFields[:len(embedFields)-1]
+			respEmbed := discordgox.NewMessageEmbed(
+				// SetAuthorしたい
+				discordgox.SetTitle("使用役職一覧"),
+				discordgox.SetEmbedField(embedFields),
+			)
+			cmpResponse := discordgox.NewInteractionResponse(
+				discordgox.SetType(discordgo.InteractionResponseChannelMessageWithSource),
+				discordgox.SetData(discordgox.NewInteractionResponseData(
+					//discordgox.SetContent("今回使用する役職を選んでください！"),
+					discordgox.SetEmbed(discordgox.NewList(respEmbed)),
+				),
+				),
+			)
+			s.InteractionRespond(i.Interaction, cmpResponse)
+		},
 	)
-
-	// discordgox.AddCommandWithComponent(
-	// 	&discordgo.ApplicationCommand{
-	// 		Name:        "auroles",
-	// 		Description: "Town of Hostで使える役職一覧を表示",
-	// 	},
-	// 	func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	// 		s.InteractionRespond(i.Interaction, cmdResponse)
-	// 	},
-	// 	customId,
-	// 	func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	// 		data := i.MessageComponentData().Values
-	// 		for _, d := range data {
-	// 			v, ok :=
-	// 		}
-	// 		respEmbed := discordgox.NewMessageEmbed(
-	// 			// SetAuthorしたい
-	// 			discordgox.SetTitle("使用役職一覧"),
-	// 			discordgox.SetEmbedField()
-	// 			)
-	// 		)
-	// 	},
-	// )
 	log.Println(cmdResponse.Data)
 	log.Println(discordgox.Commands)
 }
