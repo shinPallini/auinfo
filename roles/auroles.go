@@ -46,6 +46,8 @@ func NewAuInfo(camp string, name string, value AuRoles, description string) AuIn
 var (
 	// 複数選択できるMenuの選択最小値
 	min_value = 1
+	// 値受け渡し用のcustomID
+	customId = "select-roles"
 )
 
 func init() {
@@ -95,7 +97,7 @@ func init() {
 				discordgox.NewList[discordgo.MessageComponent](
 					discordgox.NewActionsRow(
 						discordgox.SetMultiSelectMenu(
-							"select-roles",
+							customId,
 							selectMenuOption,
 							&min_value,
 							len(selectMenuOption),
