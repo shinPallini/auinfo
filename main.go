@@ -5,6 +5,8 @@ import (
 	"os"
 	"os/signal"
 
+	_ "roles"
+
 	"github.com/bwmarrin/discordgo"
 	"github.com/joho/godotenv"
 	"github.com/shinPallini/discordgox"
