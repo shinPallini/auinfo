@@ -13,14 +13,14 @@ type AuInfo struct {
 	camp string
 	// セレクトメニューに追加する表示名
 	name string
-	// セレクトメニューが選ばれたときに送信される値
-	value AuRoles
+
 	// 役職の説明
 	description string
 }
 
 type AuRoles string
 
+// セレクトメニューが選ばれたときに送信される値を定数で指定
 const (
 	BountyHunter AuRoles = "1"
 	FireWorks    AuRoles = "2"
@@ -28,13 +28,13 @@ const (
 	Bait         AuRoles = "101"
 	Dictator     AuRoles = "102"
 	Doctor       AuRoles = "103"
+	Arsonist     AuRoles = "201"
 )
 
-func NewAuInfo(camp string, name string, value AuRoles, description string) AuInfo {
+func NewAuInfo(camp, name, description string) AuInfo {
 	return AuInfo{
 		camp:        camp,
 		name:        name,
-		value:       value,
 		description: description,
 	}
 }
@@ -53,28 +53,24 @@ var (
 func init() {
 	imposter := "インポスター陣営"
 	crew := "クルー陣営"
-	// third := "第3陣営"
+	third := "第3陣営"
 
-	roles := []AuInfo{
-		NewAuInfo(imposter, "バウンティハンター", BountyHunter, "ターゲットをキルした場合、直後のキルクールダウンが半分になる"),
-		NewAuInfo(imposter, "花火職人", FireWorks, "花火を最大3個設置できる。\n最後のインポスターになったときシェイプシフトのタイミングで一斉に起爆させる"),
-		NewAuInfo(imposter, "メアー", Mare, "停電の時以外ではキルができないが、キルクールは半分になる。\n停電中のみ移動速度が上昇するが名前が赤く表示される"),
-		NewAuInfo(crew, "ベイト", Bait, "自分をキルしたプレイヤーに強制で自分の死体を通報させることができる"),
-		NewAuInfo(crew, "ディクテーター", Dictator, "会議中に誰かが投票すると会議を強制終了させて投票先を釣ることができる。\n投票したタイミングでディクテーターは死亡する"),
-		NewAuInfo(crew, "ドクター", Doctor, "プレイヤーの死因を知ることができて、遠隔でバイタルを見ることができる"),
+	roles := map[AuRoles]AuInfo{
+		BountyHunter: NewAuInfo(imposter, "バウンティハンター", "ターゲットをキルした場合、直後のキルクールダウンが半分になる"),
+		FireWorks:    NewAuInfo(imposter, "花火職人", "花火を最大3個設置できる。\n最後のインポスターになったときシェイプシフトのタイミングで一斉に起爆させる"),
+		Mare:         NewAuInfo(imposter, "メアー", "停電の時以外ではキルができないが、キルクールは半分になる。\n停電中のみ移動速度が上昇するが名前が赤く表示される"),
+		Bait:         NewAuInfo(crew, "ベイト", "自分をキルしたプレイヤーに強制で自分の死体を通報させることができる"),
+		Dictator:     NewAuInfo(crew, "ディクテーター", "会議中に誰かが投票すると会議を強制終了させて投票先を釣ることができる。\n投票したタイミングでディクテーターは死亡する"),
+		Doctor:       NewAuInfo(crew, "ドクター", "プレイヤーの死因を知ることができて、遠隔でバイタルを見ることができる"),
+		Arsonist:     NewAuInfo(third, "アーソニスト", "キルボタンを押して一定時間近くにいれば相手にオイルを塗れる。\n全員にオイルを塗ってベントに入ると起爆して単独勝利となる"),
 	}
 
-	// info := map[string]string{
-	// 	addpref(prefInposter, "バウンティハンター"): "ターゲットをキルした場合、直後のキルクールダウンが半分になる",
-	// 	addpref(prefInposter, "花火職人"):      "花火を最大3個設置できる。\n最後のインポスターになったときシェイプシフトのタイミングで一斉に起爆させる",
-	// }
-	// var keys []string
-	var selectMenuOption = []discordgo.SelectMenuOption{}
-	for _, role := range roles {
+	selectMenuOption := make([]discordgo.SelectMenuOption, 0)
+	for role, info := range roles {
 		selectMenuOption = append(selectMenuOption, *discordgox.NewSelectMenuOption(
-			role.name,
-			string(role.value),
-			discordgox.SetSelectDescription(role.camp),
+			info.name,
+			string(role),
+			discordgox.SetSelectDescription(info.camp),
 		))
 	}
 
@@ -87,8 +83,8 @@ func init() {
 			discordgox.SetEmbed(
 				discordgox.NewList(
 					discordgox.NewMessageEmbed(
+						// SetAuthorでこのボットの名前を表示したい
 						discordgox.SetTitle("今回使用する役職を選んでください！"),
-						discordgox.SetDescription("役職一覧"),
 						discordgox.SetColor(0x21ed43),
 					),
 				),
@@ -138,6 +134,29 @@ func init() {
 			s.InteractionRespond(i.Interaction, cmdResponse)
 		},
 	)
+
+	// discordgox.AddCommandWithComponent(
+	// 	&discordgo.ApplicationCommand{
+	// 		Name:        "auroles",
+	// 		Description: "Town of Hostで使える役職一覧を表示",
+	// 	},
+	// 	func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	// 		s.InteractionRespond(i.Interaction, cmdResponse)
+	// 	},
+	// 	customId,
+	// 	func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	// 		data := i.MessageComponentData().Values
+	// 		for _, d := range data {
+	// 			v, ok :=
+	// 		}
+	// 		respEmbed := discordgox.NewMessageEmbed(
+	// 			// SetAuthorしたい
+	// 			discordgox.SetTitle("使用役職一覧"),
+	// 			discordgox.SetEmbedField()
+	// 			)
+	// 		)
+	// 	},
+	// )
 	log.Println(cmdResponse.Data)
 	log.Println(discordgox.Commands)
 }
