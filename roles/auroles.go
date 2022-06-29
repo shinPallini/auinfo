@@ -111,6 +111,7 @@ func init() {
 			Description: "Town of Hostで使える役職一覧を表示",
 		},
 		func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+			//s.State.User.String()
 			s.InteractionRespond(i.Interaction, cmdResponse)
 		},
 		customId,
@@ -134,7 +135,11 @@ func init() {
 			}
 			embedFields = embedFields[:len(embedFields)-1]
 			respEmbed := discordgox.NewMessageEmbed(
-				// SetAuthorしたい
+				discordgox.SetEmbedAuthor(
+					s.State.User.Username,
+					"https://github.com/shinPallini/auinfo",
+					"https://cdn.discordapp.com/embed/avatars/0.png",
+				),
 				discordgox.SetTitle("使用役職一覧"),
 				discordgox.SetEmbedField(embedFields),
 				discordgox.SetColor(0x21ed43),
