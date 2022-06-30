@@ -101,7 +101,7 @@ func init() {
 		BountyHunter:    NewAuInfo(imposter, "バウンティハンター", "ターゲットをキルした場合、直後のキルクールダウンが半分になる。"),
 		FireWorks:       NewAuInfo(imposter, "花火職人", "花火を最大3個設置できる。\n最後のインポスターになったときシェイプシフトのタイミングで一斉に起爆させる。"),
 		Mare:            NewAuInfo(imposter, "メアー", "停電の時以外ではキルができないが、キルクールは半分になる。\n停電中のみ移動速度が上昇するが名前が赤く表示される。"),
-		Puppeteer:       NewAuInfo(imposter, "パペッティア", "キルした対象キャラクターに次に近づいたクルーをきるさせる。"),
+		Puppeteer:       NewAuInfo(imposter, "パペッティア", "キルした対象キャラクターに次に近づいたクルーをキルさせる。"),
 		SerialKiller:    NewAuInfo(imposter, "シリアルキラー", "キルクールが短いインポスター。\nその代わり時間までに次のキルをしなければ自爆する。"),
 		ShapeMaster:     NewAuInfo(imposter, "シェイプマスター", "変身後のクールダウンを無視して彩度返信ができるインポスター。\n通常は10秒しか変身できないが、設定により変身継続時間を変更できる。"),
 		Sniper:          NewAuInfo(imposter, "スナイパー", "遠距離射撃が可能な役職。\nシェイプシフトした地点から解除した地点の延長線上にいる対象をキルできる。\nなお、斜線上にいるクルーには射撃音が聞こえる。\n弾丸を打ち切るまで通常のキルをすることはできない。\n「精密射撃モード」 が OFF の場合、扇状にキル範囲が展開される。\n「精密射撃モード」 が ON の場合、直線上にキル範囲が展開される。"),
@@ -120,7 +120,7 @@ func init() {
 		Doctor:         NewAuInfo(crew, "ドクター", "プレイヤーの死因を知ることができて、遠隔でバイタルを見ることができる"),
 		Lighter:        NewAuInfo(crew, "ライター", "タスクを完了させると自分の視界が広がるようになり、停電の視界減少の影響をうけなくなる"),
 		Mayor:          NewAuInfo(crew, "メイヤー", "票を複数所持しており、まとめて1人のプレイヤーまたはスキップに投票できる。"),
-		SabotageMaster: NewAuInfo(crew, "サボタージュマスター", "サボタージュを素早く治すことができる\nリアクター:片方を手をかざす/番号を入力するだけで直る\nO2:片方に番号を入力するだけで直る\n停電:1回のクリックですべて直る\nコミュニケーションサボタージュ:変更なし"),
+		SabotageMaster: NewAuInfo(crew, "サボタージュマスター", "サボタージュを素早く治すことができる\n- リアクター:片方を手をかざす/番号を入力するだけで直る\n- O2:片方に番号を入力するだけで直る\n- 停電:1回のクリックですべて直る\n- コミュニケーションサボタージュ:変更なし"),
 		Sheriff:        NewAuInfo(crew, "シェリフ", "人外をキルすることができるが、クルーメイトをキルすると自爆してしまう。"),
 		SpeedBooster:   NewAuInfo(crew, "スピードブースター", "タスクを完了させると生存しているランダムなプレイヤーの速度を上げる。"),
 		Trapper:        NewAuInfo(crew, "トラッパー", "キルされると、キルした人を数秒間の間移動不可能にする。"),
@@ -151,6 +151,8 @@ func init() {
 
 	// ort.SliceStable(selectMenuOption, func(i, j int) bool { return selectMenuOption[i].Description < selectMenuOption[j].Description })
 	sort.SliceStable(selectMenuOptionImposter, func(i, j int) bool { return selectMenuOption[i].Description < selectMenuOption[j].Description })
+	sort.SliceStable(selectMenuOptionCrew, func(i, j int) bool { return selectMenuOption[i].Description < selectMenuOption[j].Description })
+	sort.SliceStable(selectMenuOptionThird, func(i, j int) bool { return selectMenuOption[i].Description < selectMenuOption[j].Description })
 
 	discordgox.AddCommandWithComponent(
 		&discordgo.ApplicationCommand{
@@ -238,7 +240,7 @@ func init() {
 				),
 				discordgox.SetTitle("使用役職一覧"),
 				discordgox.SetEmbedField(embedFields),
-				discordgox.SetColor(0x21ed43),
+				discordgox.SetColor(0xdb2727),
 			)
 			cmpResponse := discordgox.NewInteractionResponse(
 				discordgox.SetType(discordgo.InteractionResponseChannelMessageWithSource),
@@ -250,4 +252,86 @@ func init() {
 			s.InteractionRespond(i.Interaction, cmpResponse)
 		},
 	)
+
+	discordgox.AddComponent(
+		customIDs[crew],
+		func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+			data := i.MessageComponentData().Values
+			embedFields := make([]*discordgo.MessageEmbedField, 0)
+			for _, r := range data {
+				info, ok := roles[AuRole(r)]
+				if ok {
+					embedFields = append(embedFields, discordgox.NewMessageEmbedField(
+						discordgox.SetEmbedFieldName(info.name),
+						discordgox.SetEmbedFieldValue(info.description),
+						discordgox.SetEmbedFieldInline(false),
+					))
+					embedFields = append(embedFields, discordgox.NewMessageEmbedField(
+						discordgox.SetEmbedFieldName("\u200B"),
+						discordgox.SetEmbedFieldValue("----------------------------------------------"),
+						discordgox.SetEmbedFieldInline(false),
+					))
+				}
+			}
+			embedFields = embedFields[:len(embedFields)-1]
+			respEmbed := discordgox.NewMessageEmbed(
+				discordgox.SetEmbedAuthor(
+					s.State.User.Username,
+					"https://github.com/shinPallini/auinfo",
+					"https://cdn.discordapp.com/embed/avatars/0.png",
+				),
+				discordgox.SetTitle("使用役職一覧"),
+				discordgox.SetEmbedField(embedFields),
+				discordgox.SetColor(0x27db54),
+			)
+			cmpResponse := discordgox.NewInteractionResponse(
+				discordgox.SetType(discordgo.InteractionResponseChannelMessageWithSource),
+				discordgox.SetData(discordgox.NewInteractionResponseData(
+					discordgox.SetEmbed(discordgox.NewList(respEmbed)),
+				),
+				),
+			)
+			s.InteractionRespond(i.Interaction, cmpResponse)
+		})
+
+	discordgox.AddComponent(
+		customIDs[third],
+		func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+			data := i.MessageComponentData().Values
+			embedFields := make([]*discordgo.MessageEmbedField, 0)
+			for _, r := range data {
+				info, ok := roles[AuRole(r)]
+				if ok {
+					embedFields = append(embedFields, discordgox.NewMessageEmbedField(
+						discordgox.SetEmbedFieldName(info.name),
+						discordgox.SetEmbedFieldValue(info.description),
+						discordgox.SetEmbedFieldInline(false),
+					))
+					embedFields = append(embedFields, discordgox.NewMessageEmbedField(
+						discordgox.SetEmbedFieldName("\u200B"),
+						discordgox.SetEmbedFieldValue("----------------------------------------------"),
+						discordgox.SetEmbedFieldInline(false),
+					))
+				}
+			}
+			embedFields = embedFields[:len(embedFields)-1]
+			respEmbed := discordgox.NewMessageEmbed(
+				discordgox.SetEmbedAuthor(
+					s.State.User.Username,
+					"https://github.com/shinPallini/auinfo",
+					"https://cdn.discordapp.com/embed/avatars/0.png",
+				),
+				discordgox.SetTitle("使用役職一覧"),
+				discordgox.SetEmbedField(embedFields),
+				discordgox.SetColor(0x2742db),
+			)
+			cmpResponse := discordgox.NewInteractionResponse(
+				discordgox.SetType(discordgo.InteractionResponseChannelMessageWithSource),
+				discordgox.SetData(discordgox.NewInteractionResponseData(
+					discordgox.SetEmbed(discordgox.NewList(respEmbed)),
+				),
+				),
+			)
+			s.InteractionRespond(i.Interaction, cmpResponse)
+		})
 }
