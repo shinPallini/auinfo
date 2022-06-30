@@ -238,7 +238,7 @@ func init() {
 					"https://github.com/shinPallini/auinfo",
 					"https://cdn.discordapp.com/embed/avatars/0.png",
 				),
-				discordgox.SetTitle("使用役職一覧"),
+				discordgox.SetTitle("インポスター役職一覧"),
 				discordgox.SetEmbedField(embedFields),
 				discordgox.SetColor(0xdb2727),
 			)
@@ -280,7 +280,7 @@ func init() {
 					"https://github.com/shinPallini/auinfo",
 					"https://cdn.discordapp.com/embed/avatars/0.png",
 				),
-				discordgox.SetTitle("使用役職一覧"),
+				discordgox.SetTitle("クルー役職一覧"),
 				discordgox.SetEmbedField(embedFields),
 				discordgox.SetColor(0x27db54),
 			)
@@ -321,7 +321,7 @@ func init() {
 					"https://github.com/shinPallini/auinfo",
 					"https://cdn.discordapp.com/embed/avatars/0.png",
 				),
-				discordgox.SetTitle("使用役職一覧"),
+				discordgox.SetTitle("第3陣営役職一覧"),
 				discordgox.SetEmbedField(embedFields),
 				discordgox.SetColor(0x2742db),
 			)
